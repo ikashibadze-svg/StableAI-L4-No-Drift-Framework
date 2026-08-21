@@ -95,6 +95,9 @@ benchmarks/
 ├── README.md
 └── reported-results.json
 
+tools/
+└── build_claude_skill_zip.sh
+
 example_l4_prompt.txt
 example_target.json
 LICENSE.md
@@ -122,7 +125,19 @@ cp -R path/to/stableai-l4-no-drift ~/.claude/skills/stableai-l4-no-drift
 
 ## Install in Claude Customize
 
-Upload the release artifact `stableai-l4-no-drift-claude-ready.zip`. Its ZIP root contains `SKILL.md` directly:
+Claude Customize requires `SKILL.md` at the top level of the uploaded ZIP.
+
+Build the upload package directly from the checked-in skill source:
+
+```bash
+bash tools/build_claude_skill_zip.sh
+```
+
+This creates:
+
+`stableai-l4-no-drift-claude-ready.zip`
+
+with the correct structure:
 
 ```text
 SKILL.md
@@ -130,6 +145,8 @@ assets/
 references/
 scripts/
 ```
+
+Do **not** upload the entire GitHub repository ZIP to Claude Customize.
 
 ## Run the No-Drift verification battery
 
