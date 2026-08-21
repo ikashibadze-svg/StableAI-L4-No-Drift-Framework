@@ -2,73 +2,148 @@
 
 **100% No-Drift LLM Output — Same Input. Same Canonical Output. Same Hash.**
 
-StableAI L4 is a deterministic control framework for LLM output and agent behavior based on **Constraint–Repair–Attractor Programming** and a physics-based treatment of information stability.
+StableAI L4 is a deterministic control framework for LLM output, retrieval, and agent behavior based on **Constraint–Repair–Attractor Programming** and a physics-based treatment of information stability.
 
 `p = (S, C, R, A, V)`
 
-- **S — State / Schema:** admissible output or execution states
-- **C — Constraints:** forbidden variation and actions
-- **R — Repair:** restoring operator that projects deviations back into the allowed state
-- **A — Attractor:** exact canonical target or canonical surviving state/action
-- **V — Verification:** exact, structural, provenance, and SHA-256 checks
+- **S — State / Schema:** admissible task, evidence, output, and execution states
+- **C — Constraints:** forbidden variation, unsupported facts, and forbidden actions
+- **R — Repair:** restoring operator that projects deviations back into the permitted state
+- **A — Attractor:** canonical surviving output, evidence state, or action
+- **V — Verification:** exact, structural, provenance, evidence-manifest, and SHA-256 checks
 
 ## Core operating law
 
 ```text
-same input + same evidence + same declared conditions
-                         ↓
-                  StableAI L4
-                         ↓
-              same canonical result
-                         ↓
-                   same hash
+same task + same evidence state + same declared conditions
+                              ↓
+                         StableAI L4
+                              ↓
+                   same canonical result
+                              ↓
+                        same hash
 ```
 
-StableAI is a **control layer**, not a replacement for the user's task. When active, it preserves the requested objective and normally runs silently. L4 diagnostics, hashes, batteries, and S/C/R/A/V traces are shown only when explicitly requested.
+StableAI is a **control layer**, not a replacement for the user's task. It preserves the requested objective and normally runs silently.
 
 ## Physics-Based Foundation
 
-StableAI translates a stability architecture from physical systems into AI control:
+StableAI maps a stability architecture from physical systems into AI control:
 
 ```text
 physical system:
 state space → constraints → perturbation → restoring dynamics → stable attractor
 
 StableAI L4:
-output/action space → constraints → drift → repair → canonical attractor
+output/evidence/action space → constraints → drift → repair → canonical attractor
 ```
 
-The principle is to reduce admissible states and deterministically repair deviations until only the canonical state survives.
+The evidence state is part of the state space. If evidence changes, the experimental state changed.
 
 ## L4 operating modes
 
-### Exact-attractor
+### Exact attractor
 When an exact TARGET already exists:
 
-`INPUT + TARGET -> S+C+R+A -> TARGET -> SHA-256`
+`INPUT + TARGET -> constrain -> repair -> TARGET -> SHA-256`
+
+StableAI never invents a TARGET simply to force exact-attractor mode.
 
 ### Closed canonical derivation
 When output is derived but can be closed with fixed schema, vocabularies, ordered rules, tie-breaks, missing/conflict states, and canonical serialization.
 
-### Canonical open-result control
-For research, retrieval, summarization, or other tasks where the answer is not known beforehand:
+### Retrieval / open-result control
+For research and live retrieval:
 
-`task -> evidence -> supported facts -> canonical order/expression -> repair -> verification -> answer`
-
-StableAI never invents a TARGET merely to force exact-attractor mode.
+`task -> bounded discovery -> freeze evidence E -> supported facts -> canonical expression -> verify -> answer`
 
 ### Agent/tool execution
 
 `state -> allowed actions -> filter -> rank -> deterministic tie-break -> act -> verify -> repair/stop`
 
-The same observable state, evidence, tools, and constraints select the same canonical next action.
+## Retrieval Lock
+
+Live web search is not treated as a stable hidden input.
+
+StableAI defines a canonical evidence manifest:
+
+`E = canonical evidence manifest`
+
+and the answer attractor becomes:
+
+`A = A(task, E, constraints)`
+
+### Discovery
+
+When no evidence state exists, StableAI performs one **bounded, non-adaptive discovery pass**, selects evidence by deterministic source rules, deduplicates copied evidence lineages, then freezes the manifest and computes:
+
+`evidence_hash = SHA256(canonical_manifest)`
+
+### Repeat
+
+A repeat run for the same task reuses the same frozen evidence state.
+
+It does **not**:
+
+- issue new exploratory queries,
+- change query wording,
+- add or drop sources,
+- search deeper,
+- broaden scope,
+- search repeatedly until "convergence."
+
+Therefore:
+
+```text
+same task + same evidence_hash + same constraints
+                       ↓
+                 same answer
+                       ↓
+                 same hash
+```
+
+### Refresh
+
+A request for fresh/latest/current information creates a new evidence version:
+
+`E1 -> refresh -> E2`
+
+A different answer caused by `E2` is **evidence evolution**, not stochastic output drift of `E1`.
+
+StableAI diagnostics distinguish:
+
+- `OUTPUT_DRIFT`
+- `EVIDENCE_CHANGE`
+- `FRESHNESS_REFRESH`
+- `SCOPE_CHANGE`
+- `TOOL_FAILURE`
+- `TRANSPORT_FAILURE`
+
+## Source determinization
+
+Default authority order:
+
+1. authoritative system of record / primary source
+2. official organization / issuer
+3. first-party publication or direct statement
+4. recognized institutional / technical source
+5. reputable independent secondary source
+6. discovery/index source only to locate stronger evidence
+
+Within a tier StableAI uses directness, date/version relevance, completeness, then canonical URL lexical order.
+
+Multiple domains carrying the same propagated biography/text count as one evidence lineage rather than independent corroboration.
 
 ## Universal invariants
 
 - Preserve the user's objective.
 - Never invent a target or fact.
+- Open-world research must have an explicit evidence state.
+- Repeat research runs reuse the same evidence manifest.
+- Fresh retrieval creates a new evidence version.
 - Resolve identity before merging evidence.
 - Represent conflicts and missing values explicitly.
+- Deduplicate propagated/copied evidence.
 - Use deterministic evidence rules and tie-breaks.
 - Repair only when the correct repair is uniquely determined.
 - Avoid redundant tool calls and duplicate side effects.
@@ -85,8 +160,10 @@ The same observable state, evidence, tools, and constraints select the same cano
 ├── references/
 │   ├── levels.md
 │   ├── theory.md
-│   └── execution.md
+│   ├── execution.md
+│   └── retrieval-lock.md
 └── scripts/
+    ├── freeze_manifest.py
     ├── hash_outputs.py
     ├── run_battery.sh
     └── verify_nodrift.py
@@ -97,14 +174,6 @@ benchmarks/
 
 tools/
 └── build_claude_skill_zip.sh
-
-example_l4_prompt.txt
-example_target.json
-LICENSE.md
-CITATION.cff
-CONTRIBUTING.md
-SECURITY.md
-CHANGELOG.md
 ```
 
 ## Install in Claude Code
@@ -127,17 +196,13 @@ cp -R path/to/stableai-l4-no-drift ~/.claude/skills/stableai-l4-no-drift
 
 Claude Customize requires `SKILL.md` at the top level of the uploaded ZIP.
 
-Build the upload package directly from the checked-in skill source:
+Build from source:
 
 ```bash
 bash tools/build_claude_skill_zip.sh
 ```
 
-This creates:
-
-`stableai-l4-no-drift-claude-ready.zip`
-
-with the correct structure:
+The resulting ZIP contains:
 
 ```text
 SKILL.md
@@ -148,7 +213,7 @@ scripts/
 
 Do **not** upload the entire GitHub repository ZIP to Claude Customize.
 
-## Run the No-Drift verification battery
+## Exact No-Drift verification battery
 
 Anthropic API:
 
@@ -161,14 +226,7 @@ python .claude/skills/stableai-l4-no-drift/scripts/verify_nodrift.py \
   --model <model-id>
 ```
 
-Claude Code CLI:
-
-```bash
-.claude/skills/stableai-l4-no-drift/scripts/run_battery.sh \
-  <model> example_l4_prompt.txt example_target.json 20
-```
-
-For an exact-target N-run certification, strict success requires:
+For exact-target N-run certification:
 
 ```text
 attempted_runs = N
@@ -180,15 +238,19 @@ unique_hashes = 1
 all_hashes_identical = true
 ```
 
-Add schema validity requirements when the target format requires them.
+For retrieval repeatability, the evidence hash must also remain identical.
+
+## Evidence manifest hashing
+
+```bash
+python .claude/skills/stableai-l4-no-drift/scripts/freeze_manifest.py evidence-manifest.json
+```
+
+This canonicalizes the manifest and outputs its SHA-256 identity.
 
 ## SHA-256
 
 SHA-256 provides cryptographic verification that returned byte strings are identical. StableAI L4 is the control method; SHA-256 is the identity-verification layer.
-
-## Reference results
-
-StableAI L4 experiments reported full no-drift convergence across repeated calls and substantial output-token/latency reduction. Machine-readable reference results are in `benchmarks/reported-results.json`.
 
 ## Commercial use
 
@@ -200,4 +262,4 @@ If you use StableAI L4 in research, benchmarks, articles, derivative frameworks,
 
 **StableAI L4 — Constraint–Repair–Attractor Programming**
 
-> **Same Input. Same Canonical Output. Same Hash. 100% No-Drift.**
+> **Same Input. Same Evidence State. Same Canonical Output. Same Hash. 100% No-Drift.**
