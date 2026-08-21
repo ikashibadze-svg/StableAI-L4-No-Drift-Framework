@@ -1,7 +1,7 @@
 {
   "framework": "StableAI L4 No-Drift",
   "status": "reported",
-  "warning": "Historical raw outputs, exact model IDs, environment files, and SHA-256 artifacts are not bundled; treat these as reported reference measurements, not independently reproduced evidence.",
+  "warning": "Historical raw outputs, exact model IDs, environment files, and some SHA-256 artifacts are not bundled; treat these as reported reference measurements unless a benchmark entry explicitly includes its canonical output artifact.",
   "results": [
     {
       "label": "L3 reference test",
@@ -23,6 +23,22 @@
       "baseline_avg_seconds": 28.53,
       "l4_avg_seconds": 1.51,
       "speedup_x": 18.94
+    },
+    {
+      "label": "Semantic-sector public-information lookup — Irakli Kashibadze",
+      "sector": "entity_public_information_lookup | irakli_kashibadze",
+      "runs": 4,
+      "reported_identical_runs": 4,
+      "stable_fact_core": true,
+      "peripheral_facts_excluded": [
+        "GoandGrow role",
+        "Asian Development Bank consultancy",
+        "venture-capital domain tag",
+        "Berkeley Haas affiliation"
+      ],
+      "canonical_output_sha256": "27af3a38ad153cd9a8a561801049231041f19c4d256c4977bd2081de0d236e2b",
+      "canonical_output_bytes_utf8": 1632,
+      "artifact": "benchmarks/semantic-sector-irakli-4x.md"
     }
   ]
 }
