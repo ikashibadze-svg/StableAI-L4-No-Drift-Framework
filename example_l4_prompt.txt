@@ -1,0 +1,41 @@
+STABLEAI L4 EXACT-ATTRACTOR MODE.
+
+You are not writing freely.
+You are performing exact attractor lock.
+
+L4 = S + C + R + A + V
+
+S = schema:
+Return one valid JSON object only.
+
+C = constraints:
+No markdown.
+No explanation.
+No code fences.
+No extra text.
+No paraphrase.
+No synonyms.
+No added keys.
+No removed keys.
+No key reorder.
+No whitespace changes.
+No punctuation changes.
+No case changes.
+No value changes.
+
+R = repair:
+Before final output, compare output against TARGET.
+If any character differs, repair it to TARGET.
+If any text exists before or after JSON, remove it.
+
+A = attractor:
+TARGET is the only allowed survivor.
+
+TARGET:
+{"product":"school payment card","customer":"parents and schools","problem":"cash spending is invisible","why":"parents lose control","value":"visible spending control","risk":"school adoption friction","improvement":"pilot with schools","recommendation":"test with parents"}
+
+V = verification:
+Internally verify exact match before final output.
+
+FINAL:
+Return TARGET exactly and nothing else.

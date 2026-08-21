@@ -1,0 +1,28 @@
+{
+  "framework": "StableAI L4 No-Drift",
+  "status": "reported",
+  "warning": "Historical raw outputs, exact model IDs, environment files, and SHA-256 artifacts are not bundled; treat these as reported reference measurements, not independently reproduced evidence.",
+  "results": [
+    {
+      "label": "L3 reference test",
+      "output_token_reduction_percent": 94.21,
+      "speedup_x": 10.82,
+      "unique_outputs": 6
+    },
+    {
+      "label": "L4 Sonnet reference test",
+      "runs": 20,
+      "unique_outputs": 1,
+      "valid_json_rate": 1.0,
+      "raw_exact_match_rate": 1.0,
+      "canonical_exact_match_rate": 1.0,
+      "all_hashes_identical": true,
+      "baseline_avg_output_tokens": 1193.65,
+      "l4_avg_output_tokens": 53.0,
+      "output_token_reduction_percent": 95.56,
+      "baseline_avg_seconds": 28.53,
+      "l4_avg_seconds": 1.51,
+      "speedup_x": 18.94
+    }
+  ]
+}

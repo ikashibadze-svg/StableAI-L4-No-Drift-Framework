@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "StableAI L4 No-Drift"
+message: "If you use this framework in research, benchmarking, or derivative work, please cite it."
+type: software
+authors:
+  - family-names: Kashibadze
+    given-names: Irakli
+version: 1.0.0
+date-released: 2026-08-21
+abstract: "Constraint–Repair–Attractor programming and verification for reproducible LLM output."
+keywords:
+  - StableAI
+  - no-drift
+  - deterministic AI
+  - LLM reliability
+  - agent skills
+license: other
