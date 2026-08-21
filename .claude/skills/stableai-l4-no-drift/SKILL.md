@@ -5,272 +5,487 @@ description: Use when StableAI L4, No-Drift, deterministic/canonical output, exa
 
 # StableAI L4 No-Drift
 
-StableAI L4 is a deterministic control layer for LLM output, retrieval, and agent behavior.
+StableAI L4 is a deterministic control layer for LLM output, retrieval, knowledge formation, and agent behavior.
 
 Core program:
 
 `p = (S, C, R, A, V)`
 
-- **S — State / Schema:** admissible task, evidence, output, and execution states
-- **C — Constraints:** forbidden variation, unsupported facts, and forbidden actions
+- **S — State / Schema:** admissible task, retrieval, evidence, knowledge, output, and execution states
+- **C — Constraints:** forbidden variation, unsupported evidence, and forbidden actions
 - **R — Repair:** deterministic projection of deviations back into the permitted state
-- **A — Attractor:** canonical surviving output, evidence state, or action
-- **V — Verification:** exact, structural, provenance, evidence-manifest, and hash checks
+- **A — Attractor:** canonical surviving evidence set, knowledge state, output, or action
+- **V — Verification:** exact, structural, provenance, evidence-set, fact-set, and hash checks
 
 Core law:
 
-`same task + same evidence state + same declared conditions -> same canonical result`
+`same input + same declared conditions -> same canonical state -> same result`
 
-## 1. Task-preservation invariant
+## 1. Task preservation
 
-The user's objective is invariant. StableAI may constrain execution, retrieval, evidence, ordering, serialization, repair, and verification. It must not replace the requested task with an L4 diagnosis, attractor-building exercise, benchmark, hash report, or tutorial.
+The user's objective is invariant.
+
+StableAI may constrain execution, retrieval, evidence selection, knowledge formation, ordering, serialization, repair, and verification. It must not replace the requested task with an L4 diagnosis, benchmark, attractor tutorial, hash report, or internal trace.
 
 Default user experience: return the requested answer and keep StableAI machinery silent.
 
 ## 2. Activation
 
-Apply when StableAI / L4 / No-Drift / deterministic or canonical behavior is explicitly requested, when the user supplies a target for exact reproduction, or when this skill has already been enabled for the task. Do not activate merely because an ordinary task could be structured.
+Apply when StableAI / L4 / No-Drift / deterministic or canonical behavior is explicitly requested, when an exact target is supplied, or when this skill has already been enabled for the task.
 
-## 3. Four operating modes
+Do not activate merely because an ordinary task could be structured.
 
-### A — Exact attractor
-Use only when an exact target already exists. Never invent a TARGET.
+## 3. Operating modes
 
-### B — Closed canonical derivation
-Use when output must be derived but permitted values can be closed by schema, vocabularies, ordered rules, null/conflict states, and deterministic tie-breaks.
+### A — Exact Attractor
+Use when an exact target already exists.
 
-### C — Retrieval / open-result control
-Use for research, web retrieval, evidence synthesis, open-world fact finding, and summarization. This mode MUST use the Retrieval Lock below.
+`INPUT + TARGET -> S+C+R+A -> TARGET -> verify`
 
-### D — Agent / tool control
+Never invent a TARGET.
+
+### B — Closed Canonical Derivation
+Use when the answer must be derived but the allowed result space can be closed by schema, vocabularies, ordered rules, null/conflict states, and deterministic tie-breaks.
+
+### C — Evidence Attractor
+Use for research, web retrieval, open-world fact finding, evidence synthesis, and knowledge construction.
+
+Every run performs fresh retrieval.
+
+The retrieval program itself must collapse to the same canonical evidence state:
+
+`same input -> same retrieval program -> same canonical evidence set -> same fact set -> same answer`
+
+Do not reuse, cache, or freeze the previous run's evidence in order to obtain repeatability.
+
+### D — Agent / Tool Attractor
 Use for multi-step tool workflows:
 
 `state -> allowed actions -> filter -> rank -> tie-break -> act -> verify -> repair/stop`
 
-## 4. Retrieval Lock — mandatory for open-world research
+## 4. Evidence Attractor Principle
 
-Live retrieval is an external state, not a free continuation of the model.
+For open-world research define the retrieval control program:
 
-Define:
+`R_E = (Q, D, P, B, F, X, T, R, V)`
 
-`E = canonical evidence manifest`
+where:
 
-The answer attractor is conditional on `E`:
+- **Q — Query Plan:** fixed canonical query sequence
+- **D — Disambiguation:** fixed identity-resolution rules
+- **P — Source Priority:** deterministic source ranking
+- **B — Evidence Budget:** fixed source/query/depth limits
+- **F — Fact Acceptance:** deterministic inclusion criteria
+- **X — Propagation/Duplicate Control:** source-lineage deduplication
+- **T — Tie-Breaks:** deterministic residual choice rules
+- **R — Repair:** reject/replace non-canonical evidence choices
+- **V — Verification:** evidence-set and fact-set identity checks
 
-`A = A(task, E, constraints)`
+The evidence attractor is:
 
-Therefore a No-Drift repeat run MUST NOT silently perform a new discovery crawl and compare that new evidence set with the previous answer.
+`E* = A_E(input, R_E)`
 
-### DISCOVERY
-Used only when no evidence manifest exists or the user explicitly requests fresh/updated information. Discovery creates one bounded canonical evidence manifest.
+Every independent run should reconstruct:
 
-### LOCKED
-Once the manifest exists, all repeat runs for the same task MUST reuse that manifest.
+`E1 = E2 = ... = En = E*`
 
-Do not issue additional search queries, add newly discovered sources, widen the source set, change query wording, search for convergence, or create v2/v3/v4 attractors from fresh evidence unless the user explicitly requests refresh/update/latest/new search or the declared freshness policy requires a new evidence version.
+Fresh retrieval is mandatory. Reuse of prior evidence does not count as an independent No-Drift test.
 
-A fresh crawl is a new evidence version, not drift of the previous version.
+## 5. Canonical Query Plan
 
-## 5. Canonical evidence manifest
+The query plan must be generated from the input by fixed rules, not improvised differently per run.
 
-Maintain a manifest conceptually equivalent to:
+For person/entity research, unless caller supplies another plan:
 
-```json
-{
-  "manifest_version":"1",
-  "task_key":"",
-  "entity_key":"",
-  "scope":"",
-  "freshness_cutoff":"",
-  "query_plan":[],
-  "sources":[{"canonical_url":"","source_tier":"","retrieved_at":"","content_hash":"","supported_claim_ids":[]}]
-}
-```
+1. literal normalized query
+2. exact quoted query
+3. normalized query + canonical identity anchor
+4. normalized query + canonical organization/domain anchor when available
+5. normalized query in verified native-script form when deterministically derivable from authoritative evidence
 
-Canonicalize the manifest and compute:
+Important:
 
-`evidence_hash = SHA256(canonical_manifest)`
+- The plan structure is fixed.
+- Query order is fixed.
+- Maximum number of queries is fixed.
+- Do not recursively invent new query phrasings from facts discovered during the run.
+- Do not search until "convergence."
+- Do not broaden scope because one run happened to find an interesting new fact.
 
-The canonical answer is associated with both `evidence_hash` and `answer_hash`.
+Identity anchors may only come from deterministic disambiguation rules, not subjective model choice.
 
-No-Drift for research is measured under a fixed evidence hash.
+## 6. Deterministic Disambiguation
 
-## 6. Bounded discovery contract
+Before merging evidence, construct a canonical entity identity key from stable attributes available from authoritative evidence.
 
-Discovery must be bounded before searching.
+Example conceptual key:
 
-Use caller rules first. Otherwise:
+`entity_key = normalized_name | canonical_org | canonical_role/domain`
 
-1. preserve the literal user query as the task key;
-2. determine entity identity before merging facts;
-3. use a fixed non-adaptive query plan;
-4. use a fixed maximum source count;
-5. select sources by deterministic authority rules;
-6. stop when the bounded plan is exhausted or the source limit is reached;
-7. freeze the manifest.
+If multiple candidate entities exist, rank them by:
 
-Do not perform open-ended "search until no more facts appear."
+1. exact normalized name
+2. authoritative organization/domain match
+3. role match
+4. geography match when relevant
+5. canonical identifier
+6. lexical tie-break
 
-Default entity query plan:
+Do not merge unresolved candidates.
 
-1. literal user query;
-2. exact quoted user query;
-3. literal query plus one identity disambiguator only if established by an authoritative source already selected under the first two queries.
+## 7. Fixed Evidence Budget
 
-Do not recursively invent new search phrases from newly found facts.
+A run must use the same retrieval budget.
 
-## 7. Source selection
+Declare or use defaults for:
 
-Use caller priorities first. Otherwise rank:
+- max queries
+- max results per query
+- max selected sources
+- max source opens/fetches
+- max depth of link-following
+- freshness window when relevant
 
-1. system of record / authoritative primary source
+The budget is part of the experimental state.
+
+Do not let one run search 6 sources and another search 15.
+
+## 8. Deterministic Source Priority
+
+Use caller priorities first. Otherwise rank sources:
+
+1. authoritative system of record / official primary source
 2. official organization / issuer
 3. first-party publication or direct statement
 4. recognized institutional / technical source
 5. reputable independent secondary source
 6. discovery/index source only to locate stronger evidence
 
-Within the same tier use: directness to claim, relevant date/version, completeness, then canonical URL lexical order.
+Within one tier, rank by:
 
-Normalize URLs before comparison and remove tracking parameters/fragments when they do not identify distinct content.
+1. directness to the claim
+2. identity confidence
+3. relevant date/version
+4. completeness
+5. canonical URL lexical order
 
-## 8. Source propagation / duplicate evidence
+Select the first `B_sources` canonical survivors.
 
-Multiple domains are not automatically independent evidence. If sources reproduce materially identical text from one origin, treat them as one evidence lineage for corroboration. Do not inflate confidence because copied text appears on several domains.
+## 9. Source Canonicalization
 
-## 9. Entity identity
+Before comparing or selecting sources:
 
-Resolve identity before merging evidence. Use stable identity-bearing attributes appropriate to the task. If identity is unresolved, use the canonical unresolved state. Never merge similar names by assumption.
+- normalize scheme/host casing
+- remove fragments
+- remove tracking parameters
+- normalize trailing slash where equivalent
+- resolve obvious duplicate URLs to one canonical URL
+- prefer original source over mirrors when deterministically identifiable
 
-## 10. Facts, conflicts, and missing information
+Source identity should be stable across runs.
 
-Never invent facts. Each accepted fact must be supported by the frozen evidence manifest.
+## 10. Propagation and Duplicate Control
 
-If credible evidence conflicts, preserve the conflict or use the canonical `CONFLICT` / `UNRESOLVED` state. For missing information use one declared state such as `null`, `UNKNOWN`, `NOT_FOUND`, or `UNRESOLVED`.
+Several domains may reproduce the same original biography or press text.
 
-## 11. Freshness and versioning
+Do not count copied text as independent corroboration.
 
-A refresh changes the evidence state:
+When two sources have materially identical content or one explicitly republishes another:
 
-`E1 -> refresh -> E2`
+- assign them one lineage
+- retain the canonical origin when identifiable
+- otherwise choose the highest-priority source, then lexical canonical URL
 
-and therefore:
+Evidence ranking operates on canonical lineages, not raw domain count.
 
-`A(task,E1) = answer_v1`
-`A(task,E2) = answer_v2`
+## 11. Deterministic Fact Acceptance
 
-A difference caused by changed evidence is **evidence evolution**, not output drift. Never call a refreshed answer a repeat run of the old evidence state.
+Facts are accepted only if they satisfy fixed rules.
 
-If the user asks a timeless question and does not request freshness, reuse the locked evidence state when available. If the user asks for latest/current/today, create a new evidence version according to that freshness boundary.
+Default order:
 
-## 12. Canonical fact ordering and expression
+1. explicit statement in selected evidence
+2. entity identity resolved
+3. claim scope matches the task
+4. no higher-priority contradiction
+5. provenance retained
+6. claim passes canonical confidence threshold if one is declared
 
-First determine accepted facts from the frozen manifest, then serialize.
+Never add a fact solely because it is interesting.
+
+Never infer unsupported personal residence, title, affiliation, dates, or other fields.
+
+## 12. Conflict Rule
+
+When selected credible evidence conflicts:
+
+1. apply source priority
+2. if one claim has strictly higher canonical priority, select it
+3. if canonical priority is equal and claims materially conflict, emit `CONFLICT` / `UNRESOLVED`
+4. do not choose based on wording preference
+
+Conflict handling must produce the same result every run.
+
+## 13. Missing Information
+
+Use one fixed missing-value state per task, such as:
+
+`null`
+`UNKNOWN`
+`NOT_FOUND`
+`UNRESOLVED`
+
+Do not fill gaps with plausible values.
+
+## 14. Canonical Evidence Set
+
+After retrieval and source ranking, create a canonical evidence set conceptually equivalent to:
+
+```json
+{
+  "task_key":"",
+  "entity_key":"",
+  "query_plan":[],
+  "budget":{},
+  "sources":[
+    {
+      "canonical_url":"",
+      "lineage_id":"",
+      "source_tier":"",
+      "content_hash":"",
+      "accepted_claim_ids":[]
+    }
+  ]
+}
+```
+
+Sort sources by canonical ranking order, not discovery order.
+
+Canonicalize and hash:
+
+`evidence_hash = SHA256(canonical_evidence_set)`
+
+For No-Drift retrieval:
+
+`unique_evidence_hashes = 1`
+
+across independent fresh runs.
+
+## 15. Canonical Fact Set
+
+From the canonical evidence set produce a canonical fact set.
+
+Each fact should conceptually contain:
+
+```json
+{
+  "claim_id":"",
+  "subject":"",
+  "relation":"",
+  "value":"",
+  "provenance":[],
+  "status":"VERIFIED"
+}
+```
+
+Sort facts by fixed schema priority, then canonical claim identifier.
+
+Hash:
+
+`fact_hash = SHA256(canonical_fact_set)`
+
+For No-Drift knowledge formation:
+
+`unique_fact_hashes = 1`
+
+## 16. Canonical Expression
+
+Only after the fact set is stable should the final answer be generated.
 
 For prose use deterministic fact order:
 
 1. identity
 2. current primary role/status
-3. major prior roles/history
-4. major verified projects/publications
-5. other relevant facts
-6. material uncertainty/conflicts
+3. major prior roles
+4. major projects/publications
+5. other task-relevant verified facts
+6. material conflicts/uncertainty
 
-Use stable terminology and avoid unnecessary synonyms when repeatability matters.
+Use stable terminology and avoid unnecessary synonym variation when repeatability matters.
 
-## 13. Repeat-run rule
+For structured output use fixed key order, vocabularies, null states, and canonical serialization.
 
-When the same task is repeated and the same evidence manifest is available:
+## 17. Retrieval Repair
 
-- reuse the same `E`;
-- do not browse for additional facts;
-- do not improve the source set;
-- do not alter scope;
-- do not widen the answer;
-- regenerate only from the frozen facts and canonical expression policy.
+Repair acts on deviations from the canonical retrieval program.
 
-A repeatability test is valid only when task key, evidence hash, constraints, and serialization policy are identical.
+Examples:
 
-## 14. Repair
+- non-canonical query wording -> replace with canonical query
+- extra exploratory query -> remove
+- source outside evidence budget -> discard
+- lower-priority source selected over higher-priority source -> replace
+- duplicate propagation source -> collapse to canonical lineage
+- unsupported fact -> remove
+- unresolved identity merge -> split / mark unresolved
+- wrong source order -> restore canonical rank
 
-Repair only toward a uniquely determined permitted state. Repair may remove unsupported facts, restore ordering/schema/canonical values, restore target bytes, or replace an invalid choice with a declared unresolved state. Repair must never create new evidence.
+Repair never uses previous-run evidence as the answer key.
 
-## 15. Agent and tool lock
+## 18. Independent Repeat-Run Rule
 
-Before any tool call verify:
+A valid No-Drift research battery must satisfy:
 
-`allowed AND available AND necessary AND arguments_complete AND not_redundant`
+- same literal user input
+- same model/runtime/system conditions declared for the test
+- same retrieval control program
+- same retrieval budget
+- fresh external retrieval for every run
+- no reuse of prior run's source list, evidence set, fact set, or answer
 
-For retrieval, an additional search is not necessary in LOCKED state.
+Each run independently computes:
 
-For side effects verify user intent, target, and payload; execute once; verify observable result; never duplicate a non-idempotent action through blind retry.
+`input -> Q -> retrieval -> E_i -> F_i -> Y_i`
 
-## 16. Verification
+Success requires collapse:
 
-### Exact attractor
-Verify exact bytes, SHA-256, unique outputs, and exact-match rate.
+`E_1 = ... = E_n`
+`F_1 = ... = F_n`
+`Y_1 = ... = Y_n`
 
-### Closed derived output
-Verify schema, vocabulary, ordering, evidence support, and repeated-run identity.
+## 19. Retrieval Verification Metrics
 
-### Retrieval
-Verify task key, evidence manifest identity, evidence hash, source lineage/deduplication, claim support, entity identity, conflict policy, fact order, and final answer hash when benchmarking.
+For N independent research runs report:
 
-Do not claim a research repeatability result if the evidence hash changed.
+```text
+attempted_runs
+completed_runs
+transport_errors
 
-### Agents/tools
-Verify allowed action, arguments, result, side-effect uniqueness, bounded retries, and terminal state.
+unique_query_plans
+unique_evidence_sets
+unique_evidence_hashes
+unique_fact_sets
+unique_fact_hashes
+unique_outputs
+unique_output_hashes
 
-## 17. Diagnostics
+evidence_exact_match_rate
+fact_exact_match_rate
+output_exact_match_rate
+```
 
-Keep diagnostics silent unless explicitly requested. When requested, distinguish `output_drift`, `evidence_change`, `transport_failure`, `tool_failure`, `scope_change`, and `freshness_refresh`.
+Strict full No-Drift target:
 
-## 18. Universal invariants
+```text
+completed_runs = attempted_runs
+unique_query_plans = 1
+unique_evidence_hashes = 1
+unique_fact_hashes = 1
+unique_output_hashes = 1
+evidence_exact_match_rate = 1.0
+fact_exact_match_rate = 1.0
+output_exact_match_rate = 1.0
+```
+
+## 20. External World Changes
+
+If the public web genuinely changes between calls, record the retrieval timestamp and freshness boundary.
+
+For a controlled benchmark, keep the run window narrow enough that the external information state is intended to be equivalent.
+
+Do not solve a changing-world benchmark by reusing old evidence.
+
+The StableAI objective remains:
+
+`same external state -> same evidence attractor`
+
+If the external world changes materially, that is a changed experimental input condition.
+
+## 21. Agent and Tool Attractor
+
+Before every tool call verify:
+
+`allowed AND available AND necessary AND arguments_complete AND canonical AND not_redundant`
+
+Select tools and arguments using fixed priorities and tie-breaks.
+
+For side effects verify user intent, exact target and payload; execute once; verify observable result; never duplicate a non-idempotent action through blind retry.
+
+## 22. Repair
+
+Repair only toward a uniquely determined permitted state.
+
+Repair can restore schema, canonical evidence choice, source order, fact order, canonical vocabulary, tool arguments, target bytes, or an explicit unresolved state.
+
+Repair never guesses.
+
+## 23. Diagnostics
+
+Keep diagnostics silent unless explicitly requested.
+
+When requested distinguish:
+
+- `OUTPUT_DRIFT`
+- `EVIDENCE_DRIFT`
+- `FACT_DRIFT`
+- `QUERY_PLAN_DRIFT`
+- `TRANSPORT_FAILURE`
+- `TOOL_FAILURE`
+- `EXTERNAL_STATE_CHANGE`
+
+## 24. Universal Invariants
 
 ```text
 I1  user objective preserved
 I2  no invented target
 I3  no invented fact
-I4  evidence state explicit for open-world tasks
-I5  repeat runs reuse the same evidence manifest
-I6  fresh retrieval creates a new evidence version
-I7  source propagation does not count as independent corroboration
-I8  identity resolved before fact merge
-I9  conflicts deterministic
-I10 missing information explicit
-I11 canonical ordering deterministic
-I12 repair never invents evidence
-I13 tool calls necessary and non-redundant
-I14 diagnostics silent unless requested
-I15 verified success terminates execution
+I4  every retrieval run is fresh and independent
+I5  query plan is canonical
+I6  retrieval budget is fixed
+I7  evidence selection is deterministic
+I8  source propagation is deduplicated
+I9  identity is resolved before merging facts
+I10 conflicts are deterministic
+I11 fact acceptance is deterministic
+I12 evidence set is canonicalized and hashable
+I13 fact set is canonicalized and hashable
+I14 repair never relies on cached prior-run evidence
+I15 tool calls are canonical and non-redundant
+I16 diagnostics stay silent unless requested
+I17 verified success terminates execution
 ```
 
-## 19. Final execution laws
+## 25. Final Laws
 
-Exact / closed tasks:
+Exact target:
 
-`preserve intent -> constrain -> derive -> canonicalize -> repair -> verify -> answer`
+`same input + same target -> same output -> same hash`
+
+Derived closed task:
+
+`same input -> same canonical derivation -> same result`
 
 Open-world research:
 
-`preserve intent -> discover once -> freeze E -> derive facts -> canonicalize -> verify -> answer`
+`same input -> same canonical retrieval program -> same evidence attractor -> same fact attractor -> same answer attractor`
 
-Repeat research run:
+Agent:
 
-`same task -> reuse E -> derive same facts -> canonicalize -> verify -> same answer`
+`same state -> same canonical action`
 
-Explicit refresh:
+StableAI does not remember stability.
 
-`same task -> new discovery -> E2 -> new versioned answer`
+**StableAI recreates stability from the same conditions.**
 
 ## Resources
 
-- `references/retrieval-lock.md` — frozen evidence and retrieval versioning.
+- `references/evidence-attractor.md` — deterministic fresh-retrieval collapse.
 - `references/execution.md` — agent/tool control.
 - `references/levels.md` — L0–L4 ladder.
 - `references/theory.md` — physics-based formulation.
 - `assets/l4-prompt-template.txt` — exact-attractor template.
-- `scripts/freeze_manifest.py` — canonical evidence-manifest hash helper.
-- `scripts/hash_outputs.py` — offline answer/hash scorer.
+- `scripts/canonical_evidence.py` — canonical evidence/fact hashing helper.
+- `scripts/hash_outputs.py` — offline output/hash scorer.
 - `scripts/verify_nodrift.py` — Anthropic API battery.
 - `scripts/run_battery.sh` — Claude Code CLI battery.
