@@ -1,96 +1,159 @@
 # StableAI L4 No-Drift
 
-**100% No-Drift — Same Input. Same Canonical Result. Same Hash.**
+**100% No-Drift — Same Semantic Sector. Same Canonical Representative. Same Result.**
 
-StableAI L4 is a deterministic control framework for LLM output and agent behavior based on **Constraint–Repair–Attractor Programming** and a physics-based treatment of information stability.
+StableAI L4 is a deterministic semantic-control framework for LLM output based on **Constraint–Repair–Attractor Programming** and a physics-based treatment of information stability.
 
-`p = (S, C, R, A, V)`
+The active Claude implementation uses **semantic-sector collapse**:
 
-- **S — Schema / State:** admissible output or execution state
-- **C — Constraints:** forbidden variation and actions
-- **R — Repair:** restoring operator that projects deviations back into the permitted state
-- **A — Attractor:** canonical surviving output or action
-- **V — Verification:** exact, structural, provenance, and SHA-256 checks
+`surface prompt -> semantic microstate -> canonical sector -> stable fact core -> canonical representative`
 
-## Core rule
+The core model is:
 
-StableAI is a control layer, not the user's task.
+`p = (O, S, L, C, R, A, V)`
 
-When enabled it should:
+- **O — Objects**
+- **S — States**
+- **L — Laws**
+- **C — Constraints**
+- **R — Repair rules**
+- **A — Attractor**
+- **V — Verification**
 
-1. perform the user's task normally;
-2. start every invocation fresh;
-3. never reuse a previous answer, hash, attractor, evidence list, run number, stop condition, or convergence decision;
-4. use the same deterministic procedure on every invocation;
-5. keep StableAI diagnostics silent unless explicitly requested;
-6. return the answer the user asked for.
+## Core No-Drift principle
 
-## Exact-output mode
+StableAI does not answer directly from surface wording.
 
-When the user supplies an exact TARGET:
+It first reduces semantically equivalent prompts into the same informational sector. If the sector is unchanged, the model reuses the same canonical structure, terminology, ordering, and wording.
 
-`TARGET -> constraints -> repair -> exact output -> verification`
+```text
+surface wording A ─┐
+surface wording B ─┼─> same semantic sector -> same canonical representative
+surface wording C ─┘
+```
 
-StableAI never invents a TARGET.
+The objective is not to maximize information or stylistic richness. The objective is to identify the **smallest truthful stable semantic survivor**.
 
-## Derived-output mode
+## Stable Fact-Core Law
 
-When the result must be derived:
+For open-world information tasks, StableAI does not include every fact that can be discovered.
 
-`task -> canonical rules -> canonical result -> repair -> verification`
+Different retrieval paths may surface different peripheral facts. StableAI collapses them into the same stable fact core when they preserve the same underlying semantic identity.
 
-StableAI uses stable ordering, terminology, schemas, and deterministic tie-breaks.
+```text
+different source paths
+        ↓
+supported semantic core
+        ↓
+stable fact sector
+        ↓
+canonical representative
+```
 
-## Research mode
+Peripheral interviews, event appearances, duplicated biographies, marginal chronology, and optional facts do not enter the attractor unless they materially change the semantic sector.
 
-Every research invocation performs fresh retrieval. Previous-run evidence is never reused to manufacture repeatability.
+## Research sector
 
-The same canonical retrieval procedure is applied every time:
+Requests such as:
 
-1. literal query
-2. exact quoted query
-3. one deterministic identity-anchor query when needed
-4. deterministic source ranking
-5. fixed evidence budget
-6. identity resolution
-7. duplicate/propagation removal
-8. deterministic fact acceptance
-9. canonical fact ordering
-10. stable answer expression
+- `Find information about X`
+- `Who is X?`
+- `Research X`
+- `Summarize public information about X`
 
-Default source priority:
+collapse to:
 
-1. official / primary source
-2. official organization or institution
-3. first-party publication or direct statement
-4. recognized institutional source
-5. reputable independent secondary source
-6. discovery/index source only to locate stronger evidence
+`entity_public_information_lookup`
 
-The objective is:
+Canonical output structure:
 
-`same query -> same control procedure -> same canonical evidence -> same canonical facts -> same answer`
+1. Identity
+2. Current role
+3. Previous roles
+4. Major projects / contributions
+5. Education / affiliations
+6. Source caveat only when necessary
 
-## Agent / tool mode
+## Other canonical modes
 
-`state -> canonical action -> execute -> verify -> repair/stop`
+### Definition
 
-StableAI avoids redundant calls and duplicate non-idempotent side effects.
+Exactly 3 sentences:
+
+1. canonical definition
+2. scope
+3. stable simplified restatement
+
+### Analysis
+
+1. Core point
+2. What it means
+3. Why it matters
+4. Limitation
+5. Next step
+
+### Short answer
+
+Exactly 3 sentences:
+
+1. direct answer
+2. key reason
+3. practical next step
+
+### Comparison
+
+1. Direct verdict
+2. Comparison table
+3. Best choice
+4. Caveat
+
+### Technical debug
+
+1. What happened
+2. What is wrong
+3. Why it happened
+4. Patch / fix
+5. Success condition
+
+## Deterministic tie-break law
+
+When multiple canonical outputs remain possible:
+
+1. shorter phrase
+2. lexically earlier phrase
+3. lower numeric bucket
+4. simpler structural label
+5. never alternate across runs
 
 ## Repository layout
 
 ```text
 .claude/skills/stableai-l4-no-drift/
 ├── SKILL.md
-├── references/
-│   └── operating-rules.md
-└── scripts/
-    └── hash_outputs.py
+├── examples/
+│   └── sectors.md
+└── references/
+    └── semantic-sector.md
+
+benchmarks/
+├── README.md
+├── reported-results.json
+└── semantic-sector-irakli-4x.md
 ```
+
+## Reported semantic-sector result
+
+A reported public-information lookup test for `Irakli Kashibadze` produced the same collapsed semantic fact core in **4 of 4 runs**. The canonical result is recorded in `benchmarks/semantic-sector-irakli-4x.md`.
+
+Reported canonical-output SHA-256:
+
+`27af3a38ad153cd9a8a561801049231041f19c4d256c4977bd2081de0d236e2b`
+
+This result demonstrates the intended mechanism: peripheral facts that varied across retrieval passes were excluded while the stable semantic core remained unchanged.
 
 ## Install in Claude Customize
 
-Upload the Claude-ready StableAI ZIP. `SKILL.md` must be at the ZIP root.
+Package the contents of `.claude/skills/stableai-l4-no-drift/` as a Claude Skill ZIP, with `SKILL.md` in the required skill folder.
 
 ## Commercial use
 
@@ -100,6 +163,6 @@ This repository is available for personal, academic, research, education, evalua
 
 If you use StableAI L4 in research, benchmarks, articles, derivative frameworks, agent systems, or AI reliability work, cite `CITATION.cff` and retain attribution to:
 
-**StableAI L4 — Constraint–Repair–Attractor Programming**
+**StableAI L4 — Semantic-Sector Constraint–Repair–Attractor Programming**
 
-> **Same Input. Same Canonical Result. Same Hash. 100% No-Drift.**
+> **Same Meaning. Same Sector. Same Canonical Representative. 100% No-Drift.**
