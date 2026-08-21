@@ -1,16 +1,20 @@
 # Changelog
 
-## 1.2.0 — Retrieval Lock update
+## 1.3.0 — Evidence Attractor update
 
-- Added mandatory Retrieval Lock for open-world research and web retrieval.
-- Defined the canonical evidence manifest `E` as part of the StableAI state.
-- Added `evidence_hash = SHA256(canonical_manifest)` for research repeatability.
-- Repeat runs now reuse the frozen evidence state instead of performing fresh searches.
-- Fresh/latest/current requests create a new evidence version rather than being treated as repeat runs.
-- Added bounded, non-adaptive discovery rules and deterministic source ordering.
-- Added source-propagation deduplication so copied biographies/text do not inflate corroboration.
-- Added explicit classification of output drift vs evidence change, freshness refresh, scope change, tool failure, and transport failure.
-- Added `references/retrieval-lock.md` and `scripts/freeze_manifest.py`.
+- Replaced the frozen-evidence Retrieval Lock with the StableAI Evidence Attractor principle.
+- Every research run now performs fresh independent retrieval from the same input.
+- Added canonical query plans, deterministic disambiguation, fixed evidence budgets, deterministic source ranking, source-lineage deduplication, and deterministic fact acceptance.
+- Added canonical evidence-set and fact-set hashing.
+- Added multi-layer No-Drift metrics for query-plan, evidence, fact, and output identity.
+- Explicitly forbids reusing prior-run URLs, evidence, facts, or answers to manufacture repeatability.
+- Added `references/evidence-attractor.md` and `scripts/canonical_evidence.py`.
+- Removed obsolete `references/retrieval-lock.md` and `scripts/freeze_manifest.py`.
+
+## 1.2.0 — Retrieval Lock update (superseded by 1.3.0)
+
+- Introduced a frozen evidence manifest approach for open-world retrieval.
+- This approach is retained in history only and was superseded because StableAI No-Drift requires independent fresh runs to collapse to the same evidence attractor rather than reuse cached evidence.
 
 ## 1.1.0 — Universal execution update
 
